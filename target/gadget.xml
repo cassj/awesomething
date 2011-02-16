@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module>
+    <ModulePrefs
+            title="thing"
+            author="Cass Johnston"
+            author_email="cassjohnston@gmail.com"
+            description="Test ap to play with citation data">
+        <Require feature="opensocial-0.9" />
+        <Require feature="sciverse" />
+        <Require feature="hub" />
+        <Require feature="org.jquery.core-1.4.2" />
+    </ModulePrefs>
+    <Content type="html" view="canvas"><![CDATA[<!-- The code for Canvas view is here. -->
+<div>Canvas view for thing.</div>]]></Content>
+    <Content type="html" view="profile"><![CDATA[<!-- The code for Profile view is here. -->
+<div>Profile view for thing.</div>]]></Content>
+    <Content type="html" view="sciverseResultsView"><![CDATA[<!-- The code for Sciverse Results View view is here. -->
+<div>Sciverse Results View view for thing.</div>]]></Content>
+</Module>
