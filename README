@@ -1,2 +1,24 @@
-Playing around with the SciVerse stuff for Dev8D
-Push!
+AweSomeThing 
+
+Uses the SciVerse data with Google's mapping and visualisation tools to 
+generate author profiles with information and visualisations of 
+publications, collaborators, location, citations etc.
+
+Code: https://github.com/cassj/awesomething
+Contact us on Twitter: @cass_j / @sandervdwaal
+
+Feedback 
+
+- Documentation is very limited and specifically the constraints on the 
+API are unclear. 
+- Details of the datastructure of the objects returned are not clear; 
+for example, what do I get back if I request the details of an 
+affiliation? (now we need to debug the js to get the object's structure) 
+- If the person API would be public with stable URIs we could link up 
+Elsevier's representation of the author with external sources 
+- Would be good if calls would return IDs of related entities (eg. when 
+querying an author we'd like to get the ID of the current affiliation, 
+not just its name and location as strings) 
+- working examples would be nice 
+- we found it a bit difficult to get a clear overview of what API calls 
+would get us the data from which backend system 
