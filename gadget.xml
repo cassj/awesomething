@@ -10,7 +10,21 @@
     </ModulePrefs>
     <Content type="html" view="canvas"><![CDATA[<!-- The code for Canvas view is here. -->
 <div>Canvas view for SciVerseExamples-ContentAPICall1.</div>]]></Content>
-    <Content type="html" view="profile"><![CDATA[<script type="text/javascript" >  
+    <Content type="html" view="profile"><![CDATA[  
+
+    <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+    <script src="http://www.openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+    <!--  This Google Maps API key is for localhost only -->
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAUcKWt1jR0Gx90mBERj1OhhTLzyom7930KAjI3iUS8c9kkKvfMhRgi1wSACKDIR9RtHCmul0L2rmgBA"
+      type="text/javascript"></script>
+	<script type="text/javascript" > 
+	//<!--
+
+var map;
+var epsg4326;
+var route;
+var routeMarkerIcon;
+var req;
 
 var globalobj;
 var authtoken;
@@ -148,10 +162,60 @@ display;
        affil_country = affil_obj['affiliation-country'];
 
        //locate on map
+       mapPlacename(affil_city + ', ' + affil_country);
  }        
         
+
+   	function mapPlacename(address) {
+	    var geocoder = new GClientGeocoder();
+
+    	geocoder.getLatLng( address,    
+    		function(point) {      
+    			if (!point) {        
+    				alert(address + " not found");      
+    			} else {
+                    alert(point);			
+					mapLatLong(point['y'], point['x'], 12);
+    			}
+    		}  
+    	);
+	}
+
+   function mapLatLong(lat, lon, zoom) {
+    var options = {
+   		maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+   		units:'meters', 
+   		projection: "EPSG:900913",
+   		displayProjection: new OpenLayers.Projection("EPSG:4326"),
+   		
+    }; 
+    map = new OpenLayers.Map('map', options);
+    var mapnik = new OpenLayers.Layer.OSM.Mapnik("OpenStreetMap", {sphericalMercator:true});
+    map.addLayers([mapnik]);
+	
+    route = new OpenLayers.Layer.Markers( "Route" );
+    map.addLayer(route);
+    var size = new OpenLayers.Size(20,20);
+    var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+    routeMarkerIcon = new OpenLayers.Icon('images/map/college.png', size, offset);
+    map.addControl( new OpenLayers.Control.LayerSwitcher() );
+    
+    epsg4326 = new OpenLayers.Projection("EPSG:4326");
+    
+	if(geo_position_js.init()){
+		locations=new Array();
+//		locations.push({ coords:{latitude:51.760768,longitude:-1.260123}});
+		locations.push({ coords:{latitude:lat,longitude:lon}});
+		var lonLat = new OpenLayers.LonLat(locations[0].coords.longitude, locations[0].coords.latitude);
+		lonLat.transform( epsg4326, map.getProjectionObject());
+		map.setCenter(lonLat, zoom);
+		map.panTo(lonLat);
+		//geo_position_js_simulator.init(locations);
+		route.addMarker(new OpenLayers.Marker(lonLat, routeMarkerIcon.clone()));
+	}
+   }
         
-  
+//-->  
 </script>
 
 <!-- The code for Profile view is here. -->
@@ -169,7 +233,12 @@ display;
      <input type="button" name="submit" onclick=retrieve_author_data(this)  value="Search for Author Profile" />
 </form>
 </div>
-<div id="content_div" ></div>]]></Content>
+<div id="content_div" ></div>
+<div id="mapPage">
+		<div style="width: 100%; height: 80%;" id="map"></div>
+	    <p><span id="message"></span></p>
+</div></div>
+]]></Content>
     <Content type="html" view="sciverseResultsView"><![CDATA[<!-- The code for Sciverse Results View view is here. -->
 <div>Sciverse Results View view for
 SciVerseExamples-ContentAPICall1.</div>]]></Content>
