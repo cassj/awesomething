@@ -1,20 +1,163 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Module>
     <ModulePrefs
-            title="thing"
-            author="Cass Johnston"
-            author_email="cassjohnston@gmail.com"
-            description="Test ap to play with citation data">
+            title="SciVerseExamples-ContentAPICall1"
+            author_email="cassjohnston@gmail.com">
         <Require feature="opensocial-0.9" />
         <Require feature="sciverse" />
         <Require feature="hub" />
         <Require feature="org.jquery.core-1.4.2" />
     </ModulePrefs>
     <Content type="html" view="canvas"><![CDATA[<!-- The code for Canvas view is here. -->
-<div>Canvas view for thing.</div>]]></Content>
-    <Content type="html" view="profile"><![CDATA[<!-- The code for Profile view is here. -->
+<div>Canvas view for SciVerseExamples-ContentAPICall1.</div>]]></Content>
+    <Content type="html" view="profile"><![CDATA[<script type="text/javascript" >  
 
-<div>Profile view for thing.</div>]]></Content>
+var globalobj;
+var authtoken;
+
+var resobj;
+
+function retrieve_author_data(f_obj) {
+        gadgets.sciverse.getContextInfo(context_callback);
+}
+
+function context_callback(result){
+        globalobj = result;
+        // get authtoken for content API call
+        authtoken = result.secureAuthtoken;
+        term = result.searchTerms;
+      //  alert("authtoken="+authtoken+", searchterm="+term);
+        makeContentApiCall(globalobj);
+}
+
+function makeContentApiCall(obj2){
+  
+   name_query="";  
+    forename = document.getElementById("forename").value;
+    if(forename != "") {
+      name_query += "authfirst(" + forename + ")";
+    }
+    surname = document.getElementById("surname").value;
+    if(surname != "") {
+      if (name_query != "") {
+        name_query += "&";
+      }
+      name_query += "authlastname(" + surname + ")";
+    }
+
+                   
+         var url = "http://api.elsevier.com/content/search/index:AUTHOR?query="+
+name_query;
+        alert(url);
+                   
+          var requestHeaders = {};
+                   requestHeaders['X-ELS-APIKey'] =
+"";
+                  requestHeaders['X-ELS-Authtoken'] = authtoken;
+                   requestHeaders['Accept'] = "application/json";
+    
+    
+          
+          bkapiMakeRequest(url, callback, requestHeaders);
+          
+  };
+  
+ /*** API for making the request to get the results of the search term
+***/
+  function bkapiMakeRequest(url, callback, requestHeaders) {
+          // add nocache=1 parameter to bkapi request
+          var ts = 1;
+          var sep = "?";
+          if (url.indexOf("?") > -1) {
+                 sep = "&";
+          }
+          url = [ url, sep, "nocache=", ts ].join("");
+          
+          var params = {};
+          params[gadgets.io.RequestParameters.HEADERS] = requestHeaders;
+          params[gadgets.io.RequestParameters.AUTHORIZATION] =
+gadgets.io.AuthorizationType.NONE;
+          params[gadgets.io.RequestParameters.CONTENT_TYPE] =
+gadgets.io.ContentType.JSON;
+          
+          gadgets.io.makeRequest(url, callback, params);
+  };
+   
+  
+  function callback(obj){
+                        
+              var params = {};
+              params[gadgets.io.RequestParameters.CONTENT_TYPE] =
+gadgets.io.ContentType.JSON;
+  
+              if(obj == null){
+                  var display = "<div>Empty object (but we're still awesome)</div>";
+    	              document.getElementById('content_div').innerHTML =
+display;
+                  return;
+              }
+  
+              var text = obj['text'];
+              //document.getElementById('content_div').innerHTML = text;
+              bkapiResp = obj['text'];
+                           
+              var textJson = gadgets.json.parse(text);
+              
+              if(!textJson){
+                  var display = "<div>Empty JSON (but we're still awesome)</div>";
+                  document.getElementById('content_div').innerHTML =
+display;
+                  return;
+              }
+              
+              alert("4. returned text parsed to JSON. ");
+              var entries = textJson['search-results']['entry'];
+//              requestCounter = entries.length;
+            display_text = parse_author_entries(entries);          
+        
+             document.getElementById('content_div').innerHTML = display_text;
+  };
+  
+ function parse_author_entries(entries){
+    var text = "<div>";
+    for(i=0; i < entries.length;  i++){
+        ent = entries[i];
+         auth_id = ent["dc:identifier"];
+        auth_obj =ent["preferred-name"];
+        auth_name = auth_obj["given-name"] + " " + auth_obj["surname"];
+        affil_obj = ent["affiliation-current"];
+        affil_name = affil_obj["affiliation-name"];
+        text +=  "<a href=\"#\" onclick=\"";
+        text += "make_ author_request(" + auth_id+") \">";
+        text += auth_name + ", " + affil_name;
+        text += "</a><br />";
+    }    
+   text +="</div>";
+  return text;
+ }
+  
+ 
+ function make_author_request(auth_id){
+     alert("Going to go with " + auth_id);
+ } 
+  
+</script>
+
+<!-- The code for Profile view is here. -->
+<div >Profile view for SciVerseExamples-ContentAPICall1.</div>
+<!--a href="javascript: retrieve_author_data();">run</a-->
+<div id="form_div">
+
+<form onsubmit="return false;">
+    <label for="forename">Forename</label>
+    <input type="text" id="forename" /><br/>
+     <label for="surname">Surname</label>
+     <input type="text" id="surname"/><br/>
+     <input type="button" name="submit" onclick=retrieve_author_data(this)  value="Search for Author Profile" />
+</form>
+</div>
+<div id="content_div" ></div>]]></Content>
     <Content type="html" view="sciverseResultsView"><![CDATA[<!-- The code for Sciverse Results View view is here. -->
-<div>Sciverse Results View view for thing.</div>]]></Content>
+<div>Sciverse Results View view for
+SciVerseExamples-ContentAPICall1.</div>]]></Content>
 </Module>
