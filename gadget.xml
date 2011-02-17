@@ -14,6 +14,7 @@
 
 var globalobj;
 var authtoken;
+var api_url = "http://api.elsevier.com/content/search/index:";
 
 var resobj;
 
@@ -26,7 +27,6 @@ function context_callback(result){
         // get authtoken for content API call
         authtoken = result.secureAuthtoken;
         term = result.searchTerms;
-      //  alert("authtoken="+authtoken+", searchterm="+term);
         makeContentApiCall(globalobj);
 }
 
@@ -40,27 +40,30 @@ function makeContentApiCall(obj2){
     surname = document.getElementById("surname").value;
     if(surname != "") {
       if (name_query != "") {
-        name_query += "&";
+       // TO DO: this doesn't work.
+        name_query += "AND";
       }
       name_query += "authlastname(" + surname + ")";
     }
-
                    
          var url = "http://api.elsevier.com/content/search/index:AUTHOR?query="+
 name_query;
-        alert(url);
                    
-          var requestHeaders = {};
+          var requestHeaders = req_headers();         
+          bkapiMakeRequest(url, authlist_callback, requestHeaders);
+          
+  };
+  
+function  req_headers(){
+            var requestHeaders = {};
                    requestHeaders['X-ELS-APIKey'] =
-"";
+"99b7bf680a84c8beeb773424a6aa3b2a";
                   requestHeaders['X-ELS-Authtoken'] = authtoken;
                    requestHeaders['Accept'] = "application/json";
     
-    
-          
-          bkapiMakeRequest(url, callback, requestHeaders);
-          
-  };
+             return requestHeaders;
+}
+  
   
  /*** API for making the request to get the results of the search term
 ***/
@@ -84,14 +87,14 @@ gadgets.io.ContentType.JSON;
   };
    
   
-  function callback(obj){
+  function authlist_callback(obj){
                         
               var params = {};
               params[gadgets.io.RequestParameters.CONTENT_TYPE] =
 gadgets.io.ContentType.JSON;
   
               if(obj == null){
-                  var display = "<div>Empty object (but we're still awesome)</div>";
+                  var display = "<div>No data. Sorry</div>";
     	              document.getElementById('content_div').innerHTML =
 display;
                   return;
@@ -104,7 +107,7 @@ display;
               var textJson = gadgets.json.parse(text);
               
               if(!textJson){
-                  var display = "<div>Empty JSON (but we're still awesome)</div>";
+                  var display = "<div>No data, Sorry.</div>";
                   document.getElementById('content_div').innerHTML =
 display;
                   return;
@@ -128,7 +131,7 @@ display;
         affil_obj = ent["affiliation-current"];
         affil_name = affil_obj["affiliation-name"];
         text +=  "<a href=\"#\" onclick=\"";
-        text += "make_ author_request(" + auth_id+") \">";
+        text += "make_author_request('" +auth_id+"','"+affil_name+"') ; return false;\">";
         text += auth_name + ", " + affil_name;
         text += "</a><br />";
     }    
@@ -137,9 +140,38 @@ display;
  }
   
  
- function make_author_request(auth_id){
+ function make_author_request(auth_id, affil_name){
      alert("Going to go with " + auth_id);
+        var requestHeaders = req_headers();
+        affil_name = encodeURIComponent(affil_name);
+        var url = api_url + "AFFILIATION?query=affil("+affil_name+")" ;
+       alert(url);
+        bkapiMakeRequest(url, affil_callback, requestHeaders);
  } 
+ 
+ function affil_callback(affil){
+     affil_obj = affil['data']['search-results']	['entry'][0];
+    if(affil_obj  != undefined) {
+      affil_id = affil_obj['parent-affiliation-id'];
+       if(affil_id != undefined) {
+//          affil_url = "http://api.elsevier.com/content/affiliation/AFFIL_ID:"+ affil_id;
+             affil_url = encodeURIComponent(affil_obj['prism:url']);
+         } else {
+           //this isn't going to work
+           affil_url = affil_obj['prism:url']; 
+         }
+        
+        var requestHeaders= req_headers();
+         requestHeaders['Accept'] = "text/xml";
+        
+        bkapiMakeRequest(affil_url, affil_details_callback, req_headers());
+      } else { alert('No results'); }
+ 
+   }
+   
+   function affil_details_callback(affil_details) {
+     alert(affil_details['text']);
+   }
   
 </script>
 
@@ -149,10 +181,12 @@ display;
 <div id="form_div">
 
 <form onsubmit="return false;">
+    <div>
     <label for="forename">Forename</label>
     <input type="text" id="forename" /><br/>
      <label for="surname">Surname</label>
      <input type="text" id="surname"/><br/>
+     </div>
      <input type="button" name="submit" onclick=retrieve_author_data(this)  value="Search for Author Profile" />
 </form>
 </div>
