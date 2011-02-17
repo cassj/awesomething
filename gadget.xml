@@ -70,8 +70,7 @@ name_query;
   
 function  req_headers(){
             var requestHeaders = {};
-                   requestHeaders['X-ELS-APIKey'] =
-"";
+                   requestHeaders['X-ELS-APIKey'] = "";
                   requestHeaders['X-ELS-Authtoken'] = authtoken;
                    requestHeaders['Accept'] = "application/json";
     
@@ -144,8 +143,11 @@ display;
         auth_name = auth_obj["given-name"] + " " + auth_obj["surname"];
         affil_obj = ent["affiliation-current"];
         affil_name = affil_obj["affiliation-name"];
+        affil_city = affil_obj['affiliation-city'];
+        affil_country = affil_obj['affiliation-country'];
+        
         text +=  "<a href=\"#\" onclick=\"";
-        text += "make_author_request('" +auth_id+"','"+affil_obj+"') ; return false;\">";
+        text += "make_author_request('" +auth_id+"','"+affil_city+ ", " + affil_country + "'); return false;\">";
         text += auth_name + ", " + affil_name;
         text += "</a><br />";
     }    
@@ -154,15 +156,12 @@ display;
  }
   
  
- function make_author_request(auth_id, affil_obj){
-     alert("Going to go with " + auth_id);
+ function make_author_request(auth_id, affil_loc){
+       alert("Going to go with " + auth_id + " from " + affil_loc);
         var requestHeaders = req_headers();
-      affil_name = affil_obj['affiliation-name'];
-      affil_city = affil_obj['affiliation-city'];
-       affil_country = affil_obj['affiliation-country'];
 
        //locate on map
-       mapPlacename(affil_city + ', ' + affil_country);
+       mapPlacename(affil_loc);
  }        
         
 
